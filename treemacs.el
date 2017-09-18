@@ -77,7 +77,7 @@ If a prefix argument ARG is given manually select the root directory."
 (defun treemacs-refresh ()
   "Refresh and rebuild treemacs buffer."
   (interactive)
-  (-if-let (treemacs-buffer (get-buffer treemacs--buffer-name))
+  (-if-let (treemacs-buffer (treemacs--get-framelocal-buffer))
       (treemacs--without-following
        (with-selected-window (get-buffer-window treemacs-buffer)
          (let* ((curr-line    (line-number-at-pos))
