@@ -39,7 +39,7 @@
 (defconst treemacs-icon-tag-node-open
   (concat (propertize " " 'display (create-image (f-join treemacs-dir "icons/" "tags-open.xpm") 'xpm nil :ascent 'center)) " "))
 
-(defvar treemacs--tags-cache (make-hash-table :test #'equal :size 100)
+(defvar-local treemacs--tags-cache (make-hash-table :test #'equal :size 100)
   "Cache storing all opened tags in treemacs view.
 The cache has 2 levels. The 1st is this has table, its keys are the absolute
 paths of files whose tags are open, its values are the 2nd level, another hash
