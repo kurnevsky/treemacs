@@ -245,7 +245,7 @@ Prefer evil keybinds, otherwise pick the first result."
   (when (s-blank? (buffer-string))
     (treemacs-restore))
 
-  (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
+  (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
   (add-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)
   (add-to-list 'delete-frame-functions #'treemacs--remove-framelocal-buffer)
 
