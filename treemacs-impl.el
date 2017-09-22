@@ -99,7 +99,7 @@
 (defvar-local treemacs--in-gui 'unset
   "Indicates whether Emacs is running in a gui or a terminal.")
 
-(defvar treemacs--ready nil
+(defvar treemacs--ready nil ;;FIXME
   "Signals to `treemacs-follow-mode' if a follow action may be run.
 Must be set to nil when no follow actions should be triggered, e.g. when the
 treemacs buffer is being rebuilt or during treemacs' own window selection
@@ -217,11 +217,6 @@ Returns nil when point is on the header."
   "Return the text label of BTN."
   (interactive)
   (buffer-substring-no-properties (button-start btn) (button-end btn)))
-
-(defsubst treemacs--refresh-on-ui-change ()
-  "Refresh the treemacs buffer when the window system has changed."
-  (when (treemacs--check-window-system)
-    (treemacs-refresh)))
 
 (defsubst treemacs--add-to-cache (btn)
   "Add a cache entry for BTN's path under its parent.
@@ -377,9 +372,23 @@ and special names like this."
   "Reset the cache of open dirs."
   (setq treemacs--open-dirs-cache nil))
 
+(defsubst treemacs--is-treemacs-window? (window)
+  "Return t when WINDOW is showing a treemacs buffer."
+  (declare (side-effect-free t))
+  (->> window window-buffer buffer-name (s-starts-with? treemacs--buffer-name-prefix)))
+
 ;;;;;;;;;;;;;;;
 ;; Functions ;;
 ;;;;;;;;;;;;;;;
+
+;; (defun treemacs--remove-treemacs-window-in-new-frames (frame)
+;;   "Close the treemacs window in the newly created FRAME.
+;; If the treemacs window is visible in a new frame (e.g. due to persp) it should
+;; be closed, since every frame must have its own buffer."
+;;   (with-selected-frame frame
+;;     (-when-let (w (--first (treemacs--is-treemacs-window? it)
+;;                            (window-list frame)))
+;;       (delete-window w))))
 
 (defun treemacs--update-caches-after-rename (old-path new-path)
   "Update dirs and tags cache after OLD-PATH was renamed to NEW-PATH."
@@ -466,25 +475,26 @@ Optionally make the git request RECURSIVE."
     (if (treemacs--is-visible?)
         (treemacs--select-visible)
       (treemacs--setup-buffer))
-    ;; f-long to expand ~ and remove final slash
-    ;; needed for root dirs given by projectile if it's used
-    (treemacs--build-tree (f-long root))
     ;; do mode activation last - if the treemacs buffer is empty when the major
     ;; mode is activated (this may happen when treemacs is restored from other
     ;; than desktop save mode) treemacs will attempt to restore the previous session
-    (treemacs-mode)
+    (unless (eq major-mode 'treemacs-mode)
+      (treemacs-mode))
+    ;; f-long to expand ~ and remove final slash
+    ;; needed for root dirs given by projectile if it's used
+    (treemacs--build-tree (f-long root))
+    (treemacs--check-window-system)
     (setq treemacs--ready t)
     ;; no warnings since follow mode is known to be defined
     (when (or treemacs-follow-after-init (with-no-warnings treemacs-follow-mode))
       (with-current-buffer origin-buffer
-        (treemacs--follow)))))
+        (treemacs--follow)
+        ))))
 
 (defun treemacs--build-tree (root)
   "Build the file tree starting at the given ROOT."
-  (treemacs--check-window-system)
   (treemacs--forget-last-highlight)
   (treemacs--stop-watching-all)
-  (treemacs--forget-last-highlight)
   (treemacs--with-writable-buffer
    (treemacs--delete-all)
    (treemacs--insert-header root)
@@ -838,8 +848,8 @@ through the buffer list and kill buffer if PATH is a prefix."
   (declare-function treemacs--window-number-zero "treemacs-impl")
 
   (defun treemacs--window-number-zero ()
-    (when (and (eq (selected-window) (frame-first-window))
-               (s-starts-with? treemacs--buffer-name-prefix (buffer-name)))
+    (when (and (s-starts-with? treemacs--buffer-name-prefix (buffer-name))
+               (= 1 (length (--filter (treemacs--is-treemacs-window? it) (window-list)))))
       10))
 
   (when (boundp 'winum-assign-func)
@@ -882,6 +892,20 @@ through the buffer list and kill buffer if PATH is a prefix."
 (with-eval-after-load 'golden-ratio
   (when (bound-and-true-p golden-ratio-exclude-modes)
     (add-to-list 'golden-ratio-exclude-modes 'treemacs-mode)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Persp Compatibility ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(with-eval-after-load 'persp-mode
+  (defun treemacs--remove-treemacs-window-in-new-frames (persp-activated-for)
+    (when (eq persp-activated-for 'frame)
+      (-when-let (w (--first (treemacs--is-treemacs-window? it)
+                             (window-list)))
+        (unless (assoc (selected-frame) treemacs--buffer-access)
+          (delete-window w)))))
+
+  (add-to-list 'persp-activated-functions #'treemacs--remove-treemacs-window-in-new-frames))
 
 (provide 'treemacs-impl)
 

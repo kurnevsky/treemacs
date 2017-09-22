@@ -247,6 +247,7 @@ Prefer evil keybinds, otherwise pick the first result."
 
   (add-hook 'kill-buffer-hook #'treemacs--on-buffer-kill nil t)
   (add-hook 'window-configuration-change-hook #'treemacs--reset-width-hook)
+  ;; (add-hook 'after-make-frame-functions #'treemacs--remove-treemacs-window-in-new-frames)
   (add-to-list 'delete-frame-functions #'treemacs--remove-framelocal-buffer)
 
   (treemacs--setup-icon-highlight)

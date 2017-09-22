@@ -161,7 +161,8 @@ Insert VAR into icon-cache for each of the given file EXTENSIONS."
   (defconst treemacs-icon-open-text   (propertize "- " 'face 'treemacs-term-node-face))
   (with-no-warnings
     (defvar treemacs-icon-closed treemacs-icon-closed-png)
-    (defvar treemacs-icon-open treemacs-icon-open-png)))
+    (defvar treemacs-icon-open treemacs-icon-open-png)
+    (defvar treemacs-icon-fallback treemacs-icon-text)))
 
 (defun treemacs-define-custom-icon (icon &rest file-extensions)
   "Define a custom ICON to use for FILE-EXTENSIONS.

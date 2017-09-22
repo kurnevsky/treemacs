@@ -58,18 +58,18 @@
 (defun treemacs-persist ()
   "Save current state, allowing it to be restored with `treemacs-restore'."
   (interactive)
-  (-if-let (buf (treemacs--buffer-exists?))
-      (with-current-buffer buf
-        (save-excursion
-          (let ((root      (treemacs--current-root))
-                (open-dirs (treemacs--get-open-dirs))
-                (point-at  (treemacs--prop-at-point 'abs-path))
-                (text      ""))
-            (treemacs--check-persist-file)
-            (setq text (s-concat text (format "ROOT : %s" root)))
-            (setq text (s-concat text "\n" (format "OPEN-DIRS : %s" (s-join "|" open-dirs))))
-            (setq text (s-concat text "\n" (format "POINT-AT : %s" point-at)))
-            (f-write text 'utf-8 treemacs--persist-file))))))
+  (-when-let (buf (treemacs--buffer-exists?))
+    (with-current-buffer buf
+      (save-excursion
+        (let ((root      (treemacs--current-root))
+              (open-dirs (treemacs--get-open-dirs))
+              (point-at  (treemacs--prop-at-point 'abs-path));;FIXME
+              (text      ""))
+          (treemacs--check-persist-file)
+          (setq text (s-concat text (format "ROOT : %s" root)))
+          (setq text (s-concat text "\n" (format "OPEN-DIRS : %s" (s-join "|" open-dirs))))
+          (setq text (s-concat text "\n" (format "POINT-AT : %s" point-at)))
+          (f-write text 'utf-8 treemacs--persist-file))))))
 
 (defun treemacs--check-persist-file ()
   "Make sure treemacs' persist file exists and is set up correctly.

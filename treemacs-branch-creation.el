@@ -29,13 +29,10 @@
 
 (declare-function treemacs--start-watching "treemacs-filewatch-mode")
 
-(defvar treemacs-icon-fallback nil
-  "The fallback icon for files.
-Is set to either the generic text png icon when in a GUI, or blank spaces when
-in a terminal.")
-
-(defvar treemacs-icons-stash nil
-  "`treemacs-icons-hash' is stored here while treemacs is run in a terminal.")
+;; (defvar treemacs-icon-fallback nil
+;;   "The fallback icon for files.
+;; Is set to either the generic text png icon when in a GUI, or blank spaces when
+;; in a terminal.")
 
 (defsubst treemacs--button-put (button prop val)
   "Set BUTTON's PROP property to VAL and return BUTTON."
@@ -60,6 +57,11 @@ is a marker pointing to POS."
 (defsubst treemacs--sort-alphabetic-desc (f1 f2)
   "Sort F1 and F2 alphabetically desc."
   (string-lessp f1 f2))
+  ;; (let ((ext1 (treemacs--file-extension f1))
+  ;;       (ext2 (treemacs--file-extension f2)))
+  ;;   (if (string-equal ext1 ext2)
+  ;;       (string-lessp f1 f2)
+  ;;     (string-lessp ext1 ext2))))
 
 (defsubst treemacs--sort-size-asc (f1 f2)
   "Sort F1 and F2 by size asc."
@@ -253,28 +255,13 @@ to PARENT."
     ,post-close-action))
 
 (defun treemacs--check-window-system ()
-  "Check if the window system has changed since the last call.
-Make the necessary render function changes changes if so and explicitly
-return t."
-  (let ((current-ui (window-system)))
-    (unless (eq current-ui treemacs--in-gui)
-      (setq treemacs--in-gui current-ui)
-      (with-no-warnings
-        (if current-ui
-            (progn
-              (when treemacs-icons-stash
-                (setq treemacs-icons-hash treemacs-icons-stash))
-              (setq treemacs-icons-stash nil
-                    treemacs-icon-open treemacs-icon-open-png
-                    treemacs-icon-closed treemacs-icon-closed-png
-                    treemacs-icon-fallback treemacs-icon-text))
-          (progn
-            (setq treemacs-icons-stash treemacs-icons-hash
-                  treemacs-icons-hash (make-hash-table :test #'equal)
-                  treemacs-icon-open treemacs-icon-open-text
-                  treemacs-icon-closed treemacs-icon-closed-text
-                  treemacs-icon-fallback ""))))
-      t)))
+  "Check if this treemacs instance runs in a GUI or TUI.
+If it's running in a TUI use terminal switch to simple text icons."
+  (unless (window-system)
+    (setq-local treemacs-icon-open treemacs-icon-open-text)
+    (setq-local treemacs-icon-closed treemacs-icon-closed-text)
+    (setq-local treemacs-icon-fallback "")
+    (setq-local treemacs-icons-hash (make-hash-table :test #'eq))))
 
 (provide 'treemacs-branch-creation)
 
