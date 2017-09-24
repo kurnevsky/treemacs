@@ -229,9 +229,19 @@ This applies to refreshing both manual as well as automatic (due to e.g.
   :group 'treemacs-configuration)
 
 (defcustom treemacs-is-never-other-window nil
-  "When non-nil treemacs will never be used as other-window.
+  "When non-nil treemacs will never be used as `other-window'.
 This can prevent other packages from opening other buffers in the treemacs
 window. It also means treemacs is never selected by calls to `other-window'."
+  :type 'boolean
+  :group 'treemacs-configuration)
+
+(defcustom treemacs-is-persistent-side-window nil
+  "When non-nil treemacs is treated as a persistent side-window.
+This means that treemacs is not deleted when calling functions like
+`delete-other-windows', or when a package launces a fullscreen buffer, like
+magit-status.
+The downside is that this may lead to issues with packages like shell-pop,
+since side windows, as of emacs25, are unsplittable."
   :type 'boolean
   :group 'treemacs-configuration)
 
