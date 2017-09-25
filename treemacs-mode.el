@@ -254,7 +254,7 @@ Prefer evil keybinds, otherwise pick the first result."
     (treemacs--on-window-config-change))
 
   (add-hook 'kill-buffer-hook #'treemacs--buffer-teardown nil t)
-  (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change)
+  (add-hook 'window-configuration-change-hook #'treemacs--on-window-config-change nil t)
 
   (treemacs--setup-icon-highlight)
   (treemacs--setup-mode-line))
